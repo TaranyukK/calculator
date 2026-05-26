@@ -7,35 +7,38 @@ import (
 	"strings"
 )
 
-var (
-	userSelect       string
-	userNumbers      string
-	availableMethods = []string{"AVG", "SUM", "MED"}
-)
+var availableMethods = map[string]func([]int64) float64{
+	"AVG": calculateAVG,
+	"SUM": calculateSUM,
+	"MED": calculateMED,
+}
 
 func main() {
 	fmt.Print("Выберите операцию (AVG, SUM, MED): ")
-	getOperationSelect()
+	selectedMethod := getOperationSelect()
 	fmt.Print("Введите числа через запятую: ")
 	formattedNumbers := getNumbers()
 
-	result := calculateNumbers(userSelect, formattedNumbers)
+	result := selectedMethod(formattedNumbers)
 
 	fmt.Printf("Результат: %.2f", result)
 }
 
-func getOperationSelect() {
+func getOperationSelect() func([]int64) float64 {
+	var userSelect string
 	for {
 		fmt.Scanln(&userSelect)
-		if slices.Contains(availableMethods, userSelect) {
+		if _, ok := availableMethods[userSelect]; ok {
 			break
 		} else {
 			fmt.Print("Неизвестный метод (AVG, SUM, MED): ")
 		}
 	}
+	return availableMethods[userSelect]
 }
 
 func getNumbers() []int64 {
+	var userNumbers string
 	fmt.Scanln(&userNumbers)
 
 	numbers := strings.Split(userNumbers, ",")
@@ -44,20 +47,6 @@ func getNumbers() []int64 {
 		v, _ := strconv.ParseInt(s, 10, 64)
 
 		result[i] = v
-	}
-
-	return result
-}
-
-func calculateNumbers(method string, nums []int64) float64 {
-	var result float64
-	switch method {
-	case "AVG":
-		result = calculateAVG(nums)
-	case "SUM":
-		result = calculateSUM(nums)
-	case "MED":
-		result = calculateMED(nums)
 	}
 
 	return result
